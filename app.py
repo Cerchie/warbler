@@ -24,7 +24,12 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 
-
+# Add a new feature that allows a user to “like” a warble. 
+# They should only be able to like warbles written by other users. T
+# hey should put a star (or some other similar symbol) next to liked warbles.
+# They should be able to unlike a warble, by clicking on that star.
+# On a profile page, it should show how many warblers that user has liked, 
+# and this should link to a page showing their liked warbles.
 
 toolbar = DebugToolbarExtension(app)
 
@@ -328,6 +333,26 @@ def messages_destroy(message_id):
 # Homepage and error pages
 
 
+# @app.route('/')
+# def homepage():
+#     """Show homepage:
+
+#     - anon users: no messages
+#     - logged in: 100 most recent messages of followed_users
+#     """
+#     following_ids = g.user.following.id
+#     if g.user and message.g.user.id == following_ids:
+#         messages = (Message
+#                     .query
+#                     .order_by(Message.timestamp.desc())
+#                     .limit(100)
+#                     .all())
+
+#         return render_template('home.html', messages=messages)
+
+#     else:
+#         return render_template('home-anon.html') my attempt here, solution code follows
+
 @app.route('/')
 def homepage():
     """Show homepage:
@@ -335,10 +360,13 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-    following_ids = g.user.following.id
-    if g.user and message.g.user.id == following_ids:
+
+    if g.user:
+        following_ids = [f.id for f in g.user.following] + [g.user.id]
+
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
@@ -347,6 +375,7 @@ def homepage():
 
     else:
         return render_template('home-anon.html')
+
 
 
 ##############################################################################
