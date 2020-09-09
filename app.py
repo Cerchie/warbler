@@ -230,14 +230,23 @@ def profile():
     header_img_url = form.header_image_url.data
     bio = form.bio.data
 
+    
     db.session.commit()
 
-    if form.validate_on_submit():
-        user = User.authenticate(form.username.data,
-                                 form.password.data)
+    user = g.user 
 
-        flash("correct password required")
-        return redirect('/')
+    if form.validate_on_submit():
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data or "/static/images/default-pic.png"
+            user.header_image_url = form.header_image_url.data or "/static/images/warbler-hero.jpg"
+            user.bio = form.bio.data
+
+            db.session.commit()
+            return redirect(f"/users/{user.id}")
+
+        flash("Wrong password, please try again.", 'danger')
 
     # return redirect(f'/users/{g.user.id}')
     return render_template("/users/edit.html", form=form)  # moved the line to render the user edit.html template at the bottom
@@ -326,8 +335,8 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-
-    if g.user:
+    following_ids = g.user.following.id
+    if g.user and message.g.user.id == following_ids:
         messages = (Message
                     .query
                     .order_by(Message.timestamp.desc())
