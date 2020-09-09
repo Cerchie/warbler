@@ -223,6 +223,14 @@ def profile():
         return redirect("/")
 
     form = UserEditForm()
+    
+    username = form.username.data
+    email = form.email.data
+    image_url = form.image_url.data
+    header_img_url = form.header_image_url.data
+    bio = form.bio.data
+
+    db.session.commit()
 
     if form.validate_on_submit():
         user = User.authenticate(form.username.data,
