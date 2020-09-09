@@ -1,8 +1,13 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, LoginManager, render_template, request, flash, redirect, session
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+
 
 from forms import UserAddForm, LoginForm, MessageForm
 from models import db, connect_db, User, Message, Follows, Likes
@@ -22,6 +27,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
+
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
@@ -33,7 +44,7 @@ connect_db(app)
 
 @app.before_request
 def add_user_to_g():
-    pdb.set_trace()
+   
     """If we're logged in, add curr user to Flask global."""
 
     if CURR_USER_KEY in session:
@@ -113,14 +124,12 @@ def login():
 
 
 @app.route('/logout')
+@login_required
 def logout():
     """Handle logout of user."""
-
-    # IMPLEMENT THIS
-# def logout_user():
-#     session.pop('user_id')
-#     flash("successful logout")
-#     return redirect('/login') THIS IS CODE FROM MY OLD PROJECT TO START
+    logout_user()
+    flash("successful logout")
+    return redirect('/login')
 
 ##############################################################################
 # General user routes:
