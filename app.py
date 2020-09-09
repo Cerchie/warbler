@@ -1,10 +1,6 @@
 import os
 
-from flask import Flask, LoginManager, render_template, request, flash, redirect, session
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
+from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -29,9 +25,6 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
 
 toolbar = DebugToolbarExtension(app)
 
@@ -124,10 +117,10 @@ def login():
 
 
 @app.route('/logout')
-@login_required
+
 def logout():
     """Handle logout of user."""
-    logout_user()
+    do_logout()
     flash("successful logout")
     return redirect('/login')
 
@@ -225,8 +218,8 @@ def stop_following(follow_id):
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
     """Update profile for current user."""
-
-    # IMPLEMENT THIS
+    
+    # IMPLEMENT THIS TO EDIT PROFILE
 
 
 @app.route('/users/delete', methods=["POST"])
