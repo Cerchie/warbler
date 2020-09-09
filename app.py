@@ -24,7 +24,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 
-# Add a new feature that allows a user to “like” a warble. 
+# Add a new feature that allows a user to “like” a w arble. 
 # They should only be able to like warbles written by other users. T
 # hey should put a star (or some other similar symbol) next to liked warbles.
 # They should be able to unlike a warble, by clicking on that star.
@@ -328,7 +328,14 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
-
+@app.route('/messages/<int:message_id>/like')
+def messages_like(message_id):
+    """like a message"""
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    msg = Message.query.get(message_id)
+    
 ##############################################################################
 # Homepage and error pages
 
