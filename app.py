@@ -335,7 +335,10 @@ def messages_like(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
     msg = Message.query.get(message_id)
-    
+    likes = Likes.query.get_or_404(message_id)
+    likes.message_id
+    # add msg.id to likes
+
 ##############################################################################
 # Homepage and error pages
 
