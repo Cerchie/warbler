@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
 from models import db, connect_db, User, Message, Follows, Likes
 
 import pdb
@@ -221,6 +221,25 @@ def profile():
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
+
+    form = UserEditForm()
+    
+    return render_template("/users/edit.html", form=form)
+
+    if form.validate_on_submit():
+        user = User.authenticate(form.username.data,
+                                 form.password.data)
+
+        flash("correct password required")
+        return redirect('/')
+
+    return redirect(f'/users/{g.user.id}')
+    
+
+    
+    
+    
+    
     # IMPLEMENT THIS TO EDIT PROFILE
 
 
