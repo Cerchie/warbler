@@ -223,8 +223,6 @@ def profile():
         return redirect("/")
 
     form = UserEditForm()
-    
-    return render_template("/users/edit.html", form=form)
 
     if form.validate_on_submit():
         user = User.authenticate(form.username.data,
@@ -233,7 +231,8 @@ def profile():
         flash("correct password required")
         return redirect('/')
 
-    return redirect(f'/users/{g.user.id}')
+    # return redirect(f'/users/{g.user.id}')
+    return render_template("/users/edit.html", form=form)  # moved the line to render the user edit.html template at the bottom
     
 
     
