@@ -328,6 +328,15 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+@app.route('/users/<int:user_id>/likes', methods=["GET"])
+def show_likes(user_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    return render_template('users/likes.html', user=user, likes=user.likes)
+    
 @app.route('/messages/<int:message_id>/like', methods=['POST'])
 def add_like(message_id):
     """Toggle a liked message for the currently-logged-in user."""
@@ -350,21 +359,10 @@ def add_like(message_id):
     db.session.commit()
 
     return redirect("/")
+
+
     # add msg.id to likes
 
-# @app.route('/messages/<int:message_id>/unlike')
-# def messages_unlike(message_id):
-#     """unlike a message"""
-#     if not g.user:
-#         flash("Access unauthorized.", "danger")
-#         return redirect("/")
-#     msg = Message.query.get(message_id)
-
-#     if msg in g.user.likes
-#     g.user.likes.pop(msg)
-
-#     db.session.commit()
-#     return redirect('/messages/<int:message_id>/unlike')
 
 ##############################################################################
 # Homepage and error pages
