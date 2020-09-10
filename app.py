@@ -335,9 +335,25 @@ def messages_like(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
     msg = Message.query.get(message_id)
-    likes = Likes.query.get_or_404(message_id)
-    likes.message_id
+    if msg not in g.user.messages
+    g.user.likes.append(msg)
+
+    db.session.commit()
+    return redirect('/messages/<int:message_id>/like')
     # add msg.id to likes
+
+@app.route('/messages/<int:message_id>/unlike')
+def messages_unlike(message_id):
+    """like a message"""
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    msg = Message.query.get(message_id)
+    if msg in g.user.likes
+    g.user.likes.pop(msg)
+
+    db.session.commit()
+    return redirect('/messages/<int:message_id>/unlike')
 
 ##############################################################################
 # Homepage and error pages
