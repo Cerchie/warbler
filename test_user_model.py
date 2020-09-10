@@ -98,6 +98,20 @@ class UserModelTestCase(TestCase):
         self.assertEqual(self.u1.following[0].id, self.u2.id) #checking to see that u1's following id matches u2's
 
 # Does User.create successfully create a new user given valid credentials?
+    def test_valid_signup(self):
+        u_test = User.signup("testtesttest", "testtest@test.com", "password", None) #usimg signup method to create u to test against
+        uid = 99999 #creating an id
+        u_test.id = uid #assigning it to the u_test user
+        db.session.commit() #committing to session
+
+        u_test = User.query.get(uid) #fetching the test user from the session using uid
+        self.assertIsNotNone(u_test) #testing that a value is there
+        self.assertEqual(u_test.username, "testtesttest") #testing that the username is the same as the test user's
+        self.assertEqual(u_test.email, "testtest@test.com") #testing that the email is the same as the test user's
+        self.assertNotEqual(u_test.password, "password") #testing that the password is the same as the test user's
+        # Bcrypt strings should start with $2b$
+        self.assertTrue(u_test.password.startswith("$2b$")) #making sure the bcrypt strings are on the level
+
 # Does User.create fail to create a new user if any of the validations (e.g. uniqueness, non-nullable fields) fail?
 # Does User.authenticate successfully return a user when given a valid username and password?
 # Does User.authenticate fail to return a user when the username is invalid?
