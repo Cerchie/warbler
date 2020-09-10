@@ -113,6 +113,27 @@ class UserModelTestCase(TestCase):
         self.assertTrue(u_test.password.startswith("$2b$")) #making sure the bcrypt strings are on the level
 
 # Does User.create fail to create a new user if any of the validations (e.g. uniqueness, non-nullable fields) fail?
+   def test_invalid_username_signup(self):
+        invalid = User.signup(None, "test@test.com", "password", None) #try to create user without username using signup method
+        uid = 123456789 #creating id for invalid test user 
+        invalid.id = uid #assigning the id to the invalid test user
+        with self.assertRaises(exc.IntegrityError) as context: #use assertRaises to make sure the IntegrityError pops up
+            db.session.commit() #commit to session
+
+    def test_invalid_email_signup(self):
+        invalid = User.signup("testtest", None, "password", None) #try to create user without email using signup method
+        uid = 123789 #creating id for invalid test user 
+        invalid.id = uid #assigning the id to the invalid test user
+        with self.assertRaises(exc.IntegrityError) as context: #use assertRaises to make sure the IntegrityError pops up
+            db.session.commit() #commit to session
+    
+    def test_invalid_password_signup(self):
+        with self.assertRaises(ValueError) as context: #make sure that when use signs up without entering pword a ValueError is raised
+            User.signup("testtest", "email@email.com", "", None)
+        
+        with self.assertRaises(ValueError) as context: as context: #make sure that when use signs up with None as a pword a ValueError is raised
+            User.signup("testtest", "email@email.com", None, None)
+
 # Does User.authenticate successfully return a user when given a valid username and password?
 # Does User.authenticate fail to return a user when the username is invalid?
 # Does User.authenticate fail to return a user when the password is invalid?
