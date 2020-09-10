@@ -95,7 +95,7 @@ class User(db.Model):
         db.Text,
         nullable=False,
     )
-
+    #missing everything from this point
     messages = db.relationship('Message')
 
     followers = db.relationship(

@@ -407,7 +407,7 @@ def homepage():
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages, liked_msg_ids=liked_msg_ids, likes=likes)
+        return render_template('home.html', messages=messages, likes = liked_msg_ids)
 
     else:
         return render_template('home-anon.html')
