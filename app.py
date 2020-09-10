@@ -336,7 +336,7 @@ def show_likes(user_id):
 
     user = User.query.get_or_404(user_id)
     return render_template('users/likes.html', user=user, likes=user.likes)
-    
+
 @app.route('/messages/<int:message_id>/like', methods=['POST'])
 def add_like(message_id):
     """Toggle a liked message for the currently-logged-in user."""
@@ -395,7 +395,8 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-
+    liked_msg_ids = [msg.id for msg in g.user.likes]
+    likes = Likes.query.all()
     if g.user:
         following_ids = [f.id for f in g.user.following] + [g.user.id]
 
@@ -406,7 +407,7 @@ def homepage():
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages)
+        return render_template('home.html', messages=messages, liked_msg_ids=liked_msg_ids, likes=likes)
 
     else:
         return render_template('home-anon.html')
