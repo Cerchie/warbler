@@ -328,32 +328,43 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
-@app.route('/messages/<int:message_id>/like')
-def messages_like(message_id):
-    """like a message"""
+@app.route('/messages/<int:message_id>/like', methods=['POST'])
+def add_like(message_id):
+    """Toggle a liked message for the currently-logged-in user."""
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    msg = Message.query.get(message_id)
-    if msg not in g.user.messages
-    g.user.likes.append(msg)
+
+    liked_message = Message.query.get_or_404(message_id)
+    if liked_message.user_id == g.user.id:
+        return abort(403)
+
+    user_likes = g.user.likes
+
+    if liked_message in user_likes:
+        g.user.likes = [like for like in user_likes if like != liked_message]
+    else:
+        g.user.likes.append(liked_message)
 
     db.session.commit()
-    return redirect('/messages/<int:message_id>/like')
+
+    return redirect("/")
     # add msg.id to likes
 
-@app.route('/messages/<int:message_id>/unlike')
-def messages_unlike(message_id):
-    """like a message"""
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-    msg = Message.query.get(message_id)
-    if msg in g.user.likes
-    g.user.likes.pop(msg)
+# @app.route('/messages/<int:message_id>/unlike')
+# def messages_unlike(message_id):
+#     """unlike a message"""
+#     if not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
+#     msg = Message.query.get(message_id)
 
-    db.session.commit()
-    return redirect('/messages/<int:message_id>/unlike')
+#     if msg in g.user.likes
+#     g.user.likes.pop(msg)
+
+#     db.session.commit()
+#     return redirect('/messages/<int:message_id>/unlike')
 
 ##############################################################################
 # Homepage and error pages
