@@ -34,6 +34,43 @@ db.create_all()
 app.config['WTF_CSRF_ENABLED'] = False
 
 
+class MessageViewTestCase(TestCase):
+    """Test views for messages."""
+
+    def setUp(self):
+        """Create test client, add sample data."""
+
+        db.drop_all()
+        db.create_all()
+
+        self.client = app.test_client()  # creating test client
+
+        self.testuser = User.signup(username="testuser",  # creating test user instance
+                                    email="test@test.com",
+                                    password="testuser",
+                                    image_url=None)
+        self.testuser_id = 8989  # creating a user id
+        self.testuser.id = self.testuser_id  # setting the user id to our test user
+
+        self.u1 = User.signup("abc", "test1@test.com",
+                              "password", None)  # creating test user 1
+        self.u1_id = 778  # creating a user id
+        self.u1.id = self.u1_id  # setting the user id to our test user
+        self.u2 = User.signup("efg", "test2@test.com",
+                              "password", None)  # creating test user 2
+        self.u2_id = 884  # creating a user id
+        self.u2.id = self.u2_id  # setting the user id to our test user
+        # creating test user 3, no id
+        self.u3 = User.signup("hij", "test3@test.com", "password", None)
+        # creating test user 4, no id
+        self.u4 = User.signup("testing", "test4@test.com", "password", None)
+
+        db.session.commit()
+
+    def tearDown(self):
+        resp = super().tearDown()
+        db.session.rollback()
+        return resp
 # When you’re logged in, can you see the follower / following pages for any user?
 # When you’re logged out, are you disallowed from visiting a user’s follower / following pages?
 # When you’re logged in, can you add a message as yourself?
