@@ -8,7 +8,7 @@
 import os
 from unittest import TestCase
 from sqlalchemy import exc
-from models import db, User, Message, Follows
+from models import db, User, Message, Follows, Likes
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -28,39 +28,21 @@ from app import app
 
 db.create_all()
 
+class MessageModelTestCase(TestCase):
+    """Test views for messages."""
+
     def setUp(self):
         """Create test client, add sample data."""
+
         db.drop_all()
-        db.create_all() #create and drop db
+        db.create_all()
 
-        u1 = User.signup("test1", "email1@email.com", "password", None) #use signup method to create a user instance
-        uid1 = 1111 #designate the uid to make referencing it easier
-        u1.id = uid1
+        self.uid = 94566
+        u = User.signup("testing", "testing@test.com", "password", None)
+        u.id = self.uid
+        db.session.commit()
 
-        u2 = User.signup("test2", "email2@email.com", "password", None) #making another user copy
-        uid2 = 2222
-        u2.id = uid2
-
-        msg1 = Message("hi there", default, 1)
-        msgid = 3333
-        msg1.id = msgid
-
-        like = Likes(2222, 3333)
-
-        db.session.commit() #committing the copies to the session
-
-        u1 = User.query.get(uid1) #establishing the variables
-        u2 = User.query.get(uid2)
-
-        self.u1 = u1 #storing all this info in self
-        self.uid1 = uid1
-
-        self.u2 = u2
-        self.uid2 = uid2
-
-        self.msg1 = msg1
-
-        self.like = like
+        self.u = User.query.get(self.uid)
 
         self.client = app.test_client()
 
@@ -69,7 +51,24 @@ db.create_all()
         db.session.rollback() 
         return res
 
-# Does the repr method work as expected?
+# Does the model work on a basic level?
+    def test_message_model(self):
+        """Does basic model work?"""
+        
+        m = Message( #creating message
+            text="a warble",
+            user_id=self.uid
+        )
+
+        db.session.add(m)
+        db.session.commit() #adding to sesh
+
+        # User should have 1 message
+        self.assertEqual(len(self.u.messages), 1) #check that there is one msg
+        self.assertEqual(self.u.messages[0].text, "a warble") #check that msg text is the same as the msg added
+
+
+
 # Does the model successfully detect when user1 creates message1?
 # Does the model successfully prevent user2 from creating message1?
 # Does the model  successfully detect when message1 belongs to user1?
