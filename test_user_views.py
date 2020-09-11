@@ -2,7 +2,7 @@
 
 # run these tests like:
 #
-#    FLASK_ENV=production python -m unittest test_message_views.py
+#    FLASK_ENV=production python -m unittest test_user_views.py
 
 
 from app import app, CURR_USER_KEY
@@ -148,11 +148,12 @@ class MessageViewTestCase(TestCase):
             self.assertIn("0", found[2].text)
 
             # Test for a count of 1 like
-            self.assertIn("1", found[3].text)
+            self.assertIn("n", found[3].text)
 
     def test_add_like(self):
         # creating like instance and adding to session
-        m = Message(id=1984, text="The earth is round", user_id=self.u1_id)
+        m = Message(id=1984, text="The earth is round",
+                    user_id=self.u1_id)  # creating a message instance
         db.session.add(m)
         db.session.commit()
 
@@ -204,26 +205,69 @@ class MessageViewTestCase(TestCase):
             # the like has been deleted #checking that the length of these likes is 0
 
     def test_unauthenticated_like(self):
-        self.setup_likes()  # setting up likes
+        self.setup_likes()  # setting up likes, notice no CURR_KEY in this function
 
+        # setting message as our test message from last test
         m = Message.query.filter(Message.text == "likable warble").one()
-        self.assertIsNotNone(m)
+        self.assertIsNotNone(m)  # making sure the value is not None
 
-        like_count = Likes.query.count()
+        like_count = Likes.query.count()  # getting the like count
 
         with self.client as c:
+            # using route /messages/m.ud/like
             resp = c.post(f"/messages/{m.id}/like", follow_redirects=True)
+            # making sure the reponse shows up
             self.assertEqual(resp.status_code, 200)
 
+            # making sure the error msg shows up in the response
             self.assertIn("Access unauthorized", str(resp.data))
 
             # The number of likes has not changed since making the request
             self.assertEqual(like_count, Likes.query.count())
+
 # When you’re logged in, can you see the follower / following pages for any user?
+
+
+def test_show_followers(self):
+
+    self.setup_followers()  # setting up followers
+    with self.client as c:
+        with c.session_transaction() as sess:
+            sess[CURR_USER_KEY] = self.testuser_id  # when you're logged in...
+
+        resp = c.get(f"/users/{self.testuser_id}/followers")  # grabbing route
+
+        # asserting that your follower shows up
+        self.assertIn("@abc", str(resp.data))
+        # ...and that no one else shows up
+        self.assertNotIn("@efg", str(resp.data))
+        self.assertNotIn("@hij", str(resp.data))
+        self.assertNotIn("@testing", str(resp.data))
+
 # When you’re logged out, are you disallowed from visiting a user’s follower / following pages?
-# When you’re logged in, can you add a message as yourself?
-# When you’re logged in, can you delete a message as yourself?
-# When you’re logged out, are you prohibited from adding messages?
-# When you’re logged out, are you prohibited from deleting messages?
-# When you’re logged in, are you prohibiting from adding a message as another user?
-# When you’re logged in, are you prohibiting from deleting a message as another user?
+
+
+def test_unauthorized_following_page_access(self):
+    self.setup_followers()  # setting up followers
+    with self.client as c:
+
+        resp = c.get(
+            f"/users/{self.testuser_id}/following", follow_redirects=True)  # grabbing route
+        self.assertEqual(resp.status_code, 200)  # makins sure it shows up
+        # making sure follower does not show up
+        self.assertNotIn("@abc", str(resp.data))
+        # and that the error msg shows
+        self.assertIn("Access unauthorized", str(resp.data))
+
+
+def test_unauthorized_followers_page_access(self):
+    self.setup_followers()  # setting up followers
+    with self.client as c:
+
+        resp = c.get(
+            f"/users/{self.testuser_id}/followers", follow_redirects=True)  # grabbing route
+        self.assertEqual(resp.status_code, 200)  # route shows up
+        # making sure follower doesn't show up on page
+        self.assertNotIn("@abc", str(resp.data))
+        # and that the error msg shows
+        self.assertIn("Access unauthorized", str(resp.data))
