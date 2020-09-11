@@ -71,7 +71,31 @@ class MessageViewTestCase(TestCase):
         resp = super().tearDown()
         db.session.rollback()
         return resp
-# When you’re logged in, can you see the follower / following pages for any user?
+
+    # When you’re logged in, can you see the follower / following pages for any user?
+    def test_users_index(self):
+        with self.client as c:  # setting up client
+            resp = c.get("/users")  # response is /users page
+
+            # checking that each user is on the page
+            self.assertIn("@testuser", str(resp.data))
+            self.assertIn("@abc", str(resp.data))
+            self.assertIn("@efg", str(resp.data))
+            self.assertIn("@hij", str(resp.data))
+            self.assertIn("@testing", str(resp.data))
+
+    def test_users_search(self):
+        with self.client as c:
+            resp = c.get("/users?q=test")
+
+            self.assertIn("@testuser", str(resp.data))
+            self.assertIn("@testing", str(resp.data))
+
+            self.assertNotIn("@abc", str(resp.data))
+            self.assertNotIn("@efg", str(resp.data))
+            self.assertNotIn("@hij", str(resp.data))
+
+
 # When you’re logged out, are you disallowed from visiting a user’s follower / following pages?
 # When you’re logged in, can you add a message as yourself?
 # When you’re logged in, can you delete a message as yourself?
