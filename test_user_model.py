@@ -7,7 +7,7 @@
 
 import os
 from unittest import TestCase
-
+from sqlalchemy import exc
 from models import db, User, Message, Follows
 
 # BEFORE we import our app, let's set an environmental variable
@@ -113,7 +113,7 @@ class UserModelTestCase(TestCase):
         self.assertTrue(u_test.password.startswith("$2b$")) #making sure the bcrypt strings are on the level
 
 # Does User.create fail to create a new user if any of the validations (e.g. uniqueness, non-nullable fields) fail?
-   def test_invalid_username_signup(self):
+    def test_invalid_username_signup(self):
         invalid = User.signup(None, "test@test.com", "password", None) #try to create user without username using signup method
         uid = 123456789 #creating id for invalid test user 
         invalid.id = uid #assigning the id to the invalid test user
@@ -131,12 +131,22 @@ class UserModelTestCase(TestCase):
         with self.assertRaises(ValueError) as context: #make sure that when use signs up without entering pword a ValueError is raised
             User.signup("testtest", "email@email.com", "", None)
         
-        with self.assertRaises(ValueError) as context: as context: #make sure that when use signs up with None as a pword a ValueError is raised
+        with self.assertRaises(ValueError) as context: 
             User.signup("testtest", "email@email.com", None, None)
 
 # Does User.authenticate successfully return a user when given a valid username and password?
+    def test_valid_authentication(self):
+        u = User.authenticate(self.u1.username, "password") #give a valid username/password
+        self.assertIsNotNone(u) #check user existence
+        self.assertEqual(u.id, self.uid1) #check u.id = u1 uid
 # Does User.authenticate fail to return a user when the username is invalid?
+    def test_invalid_username(self):
+        self.assertFalse(User.authenticate("badusername", "password")) #check that a bad username is assertedFalse
+
 # Does User.authenticate fail to return a user when the password is invalid?
+    def test_wrong_password(self):
+        self.assertFalse(User.authenticate(self.u1.username, "badpassword")) #check that a bad pword is assertedFalse
+
 
     def test_user_model(self):
         """Does basic model work?"""
