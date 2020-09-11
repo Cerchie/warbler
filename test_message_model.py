@@ -5,6 +5,7 @@
 #    python -m unittest test_message_model.py
 
 
+from app import app
 import os
 from unittest import TestCase
 from sqlalchemy import exc
@@ -20,13 +21,13 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
 # Now we can import app
 
-from app import app
 
 # Create our tables (we do this here, so we only create the tables
 # once for all tests --- in each test, we'll delete the data
 # and create fresh new clean test data
 
 db.create_all()
+
 
 class MessageModelTestCase(TestCase):
     """Test views for messages."""
@@ -47,34 +48,66 @@ class MessageModelTestCase(TestCase):
         self.client = app.test_client()
 
     def tearDown(self):
-        res = super().tearDown() #calling super on teardown allows us to test more than one heirarchy multiple times
-        db.session.rollback() 
+        # calling super on teardown allows us to test more than one heirarchy multiple times
+        res = super().tearDown()
+        db.session.rollback()
         return res
 
 # Does the model work on a basic level?
+# Does the model successfully detect when user1 creates message1?
+# Does the model  successfully detect when message1 belongs to user1?
     def test_message_model(self):
         """Does basic model work?"""
-        
-        m = Message( #creating message
+
+        m = Message(  # creating message
             text="a warble",
             user_id=self.uid
         )
 
         db.session.add(m)
-        db.session.commit() #adding to sesh
+        db.session.commit()  # adding to sesh
 
         # User should have 1 message
-        self.assertEqual(len(self.u.messages), 1) #check that there is one msg
-        self.assertEqual(self.u.messages[0].text, "a warble") #check that msg text is the same as the msg added
+        # check that there is one msg
+        self.assertEqual(len(self.u.messages), 1)
+        # check that msg text is the same as the msg added
+        self.assertEqual(self.u.messages[0].text, "a warble")
 
 
+# Does the model successfully prevent user2 from creating message1? not addressed in solution code. check to see if addressed in views
 
-# Does the model successfully detect when user1 creates message1?
-# Does the model successfully prevent user2 from creating message1?
-# Does the model  successfully detect when message1 belongs to user1?
+
+# Does the model successfully prevent user1 from creating a second message with the same id as the first? not addressed in solution code. check to see if addressed in views
+
+# Does the model successfully prevent user2 from liking user1's message multiple times?
 # Does the model successfully detect when user2 likes message1?
 # Does the model successfully prevent user1 from liking message1?
 # Does the model successfully detect when message1 belongs to the likes of user2?
-# Does the model successfully prevent user1 from creating a second message with the same id as the first?
-# Does the model successfully prevent user2 from liking user1's message multiple times?
 
+    def test_message_likes(self):
+        m1 = Message(  # creating first msg instance
+            text="a warble",
+            user_id=self.uid
+        )
+
+        m2 = Message(
+            text="a very interesting warble",  # creating second msg instance
+            user_id=self.uid
+        )
+
+        # creating a test user instance
+        u = User.signup("yetanothertest", "t@email.com", "password", None)
+        uid = 888  # creating an id
+        u.id = uid  # assigning it to our test user
+        db.session.add_all([m1, m2, u])  # adding to sesh
+        db.session.commit()  # committing
+
+        u.likes.append(m1)  # adding m1 to user likes
+
+        db.session.commit()  # committing
+
+        # find likes where their user id = the test user id
+        l = Likes.query.filter(Likes.user_id == uid).all()
+        self.assertEqual(len(l), 1)  # there should be one
+        # the id of the first message in the likes list should be the same as our test liked message
+        self.assertEqual(l[0].message_id, m1.id)
